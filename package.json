@@ -1,0 +1,17 @@
+{
+  "name": "discoin",
+  "version": "0.0.1",
+  "description": "Central API for Discord currency exchange",
+  "engines": {
+    "node": "6.11.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
+  },
+  "author": "Austin Huang",
+  "license": "ISC",
+  "dependencies": {
+    "restify": "^5.0.1"
+  }
+}
