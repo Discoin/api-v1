@@ -54,5 +54,5 @@ server.get('/rates', function respond(req, res, next) {
 });
 
 server.listen(process.env.PORT || 8080, function() {
-	console.log('%s listening at %s', server.name, server.url);
+	console.log(`${server.name} listening at ${server.url}`);
 });
