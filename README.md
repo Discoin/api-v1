@@ -31,7 +31,7 @@ Tokens are issued under Austin Huang's approval.
 
 ### Start a transaction
 ```
-https://discoin.herokuapp.com/transaction/:user/:amount/:to
+GET https://discoin.herokuapp.com/transaction/:user/:amount/:to
 ```
 
 #### Header
@@ -47,7 +47,7 @@ Plain text: Either `Submitted.` or an error starting with `[ERROR]`.
 
 ### Receive unprocessed transactions
 ```
-https://discoin.herokuapp.com/transaction
+GET https://discoin.herokuapp.com/transaction
 ```
 
 #### Header
