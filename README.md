@@ -35,7 +35,7 @@ https://discoin.herokuapp.com/transaction/:user/:amount/:to
 ```
 
 #### Header
-* Authencation: Your token.
+* Authorization: Your token.
 
 #### Params
 * User: User ID of the user who started the transaction.
@@ -51,7 +51,7 @@ https://discoin.herokuapp.com/transaction
 ```
 
 #### Header
-* Authencation: Your token.
+* Authorization: Your token.
 
 #### Result
 Either a JSON array of unprocessed transactions, or a plain text error starting with `[ERROR]`.
