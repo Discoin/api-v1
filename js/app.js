@@ -12,7 +12,7 @@ window.cookieconsent.initialise({
 		}
 	},
 	"content": {
-		"message": "DiscordForge uses cookies to ensure you get the best experience on the website."
+		"message": "Discoin uses cookies to ensure you get the best experience on the website."
 	}
 });
 /* Cookie Consent End
