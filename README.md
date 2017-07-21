@@ -20,43 +20,4 @@ Let's say a user wants to exchange A bot currency to B bot currency.
 3. B bot picks the message up and finishes the transaction.
 4. The user is notified by B bot indicates that the transaction has been finished.
 
-## Obligation on participating developers
-Participating developers should not abuse their privilege of manipulating the currency, including but not limited to adding a high amount of currency to themselves and convert them into other currencies. Violators will be banned from this program.
-
-## API
-API source can be found in this repo.
-
-### Tokens
-Tokens are issued under Austin Huang's approval.
-
-### Start a transaction
-```
-GET http://discoin-austinhuang.rhcloud.com/transaction/:user/:amount/:to
-```
-
-#### Header
-* Authorization: Your token.
-
-#### Params
-* User: User ID of the user who started the transaction.
-* Amount: Raw amount in *your* currency
-* To: Destination currency code
-
-#### Result
-Plain text: Either `Submitted.` or an error starting with `[ERROR]`.
-
-### Receive unprocessed transactions
-```
-GET http://discoin-austinhuang.rhcloud.com/transaction
-```
-
-#### Header
-* Authorization: Your token.
-
-#### Result
-Either a JSON array of unprocessed transactions, or a plain text error starting with `[ERROR]`.
-
-### Check rates and currency codes
-http://discoin-austinhuang.rhcloud.com/rates
-
-**UNSUITABLE FOR DEVELOPER USE.** The API itself calculates the currency for you so don't use this as rates! This page is only for regular users.
+*Want to learn more? Check out our [wiki](https://github.com/austinhuang0131/discoin/wiki)!*
