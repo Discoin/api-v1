@@ -31,7 +31,7 @@ Tokens are issued under Austin Huang's approval.
 
 ### Start a transaction
 ```
-GET https://discoin.herokuapp.com/transaction/:user/:amount/:to
+GET http://discoin-austinhuang.rhcloud.com/transaction/:user/:amount/:to
 ```
 
 #### Header
@@ -47,7 +47,7 @@ Plain text: Either `Submitted.` or an error starting with `[ERROR]`.
 
 ### Receive unprocessed transactions
 ```
-GET https://discoin.herokuapp.com/transaction
+GET http://discoin-austinhuang.rhcloud.com/transaction
 ```
 
 #### Header
@@ -57,6 +57,6 @@ GET https://discoin.herokuapp.com/transaction
 Either a JSON array of unprocessed transactions, or a plain text error starting with `[ERROR]`.
 
 ### Check rates and currency codes
-https://discoin.herokuapp.com/rates
+http://discoin-austinhuang.rhcloud.com/rates
 
 **UNSUITABLE FOR DEVELOPER USE.** The API itself calculates the currency for you so don't use this as rates! This page is only for regular users.
