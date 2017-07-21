@@ -12,6 +12,7 @@
   "author": "Austin Huang",
   "license": "ISC",
   "dependencies": {
+    "mongodb": "^2.2.30",
     "restify": "^5.0.1"
   }
 }
