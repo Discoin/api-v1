@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#">
+<head>
+    <!-- Title -->
+    <title>Discoin &mdash; Home</title>
+
+    <!-- Meta -->
+    <meta charset='utf-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+    <meta name='theme-color' content='#23272A' />
+    <meta name="description" content="Discoin is the new central bot currency for Discord! Now you can transfer the currency from one bot to another using Discoin!">
+    <meta name="keywords" content="discoin,currency,bot,transfer">
+    <meta name="author" content="Site created by: LewisTehMinerz & Jakeoid">
+
+    <!-- Open Graph Meta -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Discoin">
+    <meta property="og:description" content="Discoin is the new central bot currency for Discord! Now you can transfer the currency from one bot to another using Discoin!">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="http://localhost">
+    <meta property="og:image" content="http://localhost/images/badge.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:type" content="image/png">
+    <!-- Stylesheets -->
+    <script src="/cdn-cgi/apps/head/Ywii14Ny6Vaq8g2OD9d-cUOaens.js"></script><link href="./css/stylesheet.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+</head>
+<body>
+
+
+<header>
+
+    <img src="img/logo.png" />
+
+</header>
+
+<section>
+
+    <div class="header">
+        <h1>
+            Ever wanted your hard-earned currency to go into something useful?
+        </h1>
+        <h2>
+            Discoin brings that problem to an end!
+        </h2>
+    </div>
+
+</section>
+
+<section>
+
+    <h3>About</h3>
+
+    <p>
+        Discoin is a centralized currency for Discord bots, by centralizing the currencies we allow you to transfer your hard-earned coins fom one bot to another!
+        (That is, if that bot supports it)
+    </p>
+
+</section>
+
+<section>
+
+    <h3>How does it work?</h3>
+
+    <p>
+         When you make a request for a credit transfer, the bot makes a request to our API and proceeds to transfer the credits using our API
+    </p>
+
+</section>
+
+<section>
+
+    <h3>How do I add this to my bot?!</h3>
+
+    <p>
+        You're a bot dev, huh? It's really simple! Here are the steps!
+    </p>
+
+    <ol>
+        <li><code>Ask austinhuang#1076 for a token to the service</code></li>
+        <li><code>Once you have a token, make a command to transfer credits/your currency</code></li>
+        <li><code>To use our API make the command do a GET request to ENDPOINT_URL_CHANGE_THIS/transaction/USERID/AMMOUNT/CURRENCY</code></li>
+        <li><code>Your tax rate is calculated by our API so you do not need to do anything else on your end</code></li>
+        <li><code>Welcome to our centralized currency network!</code></li>
+    </ol>
+
+
+</section>
+
+<section>
+
+    <h3>More Help</h3>
+
+    <p>
+        For anything more you need you can find it inside of the <a href="https://github.com/austinhuang0131/discoin/wiki">Github Wiki</a>!
+    </p>
+
+</section>
+
+<footer>
+    <p>Site created by <a href="https://github.com/jakeoid">Jakeoid#6284</a></p>
+</footer>
+
+</body>
+
+<!--Sorry about this, Still learning node and don't know how to serve more files without a static URL-->
+<style>
+    /** FONTS
+----------------------------- **/
+    @font-face {
+        font-family: Whitney;
+        font-style: light;
+        font-weight: 300;
+        src: url(https://discordapp.com/assets/16801bfdf51ed88e69bc90626a3ea436.woff) format("woff"); }
+
+    @font-face {
+        font-family: Whitney;
+        font-style: normal;
+        font-weight: 500;
+        src: url(https://discordapp.com/assets/d153359b5d87601d2b9c708b7ae2db02.woff) format("woff"); }
+
+    @font-face {
+        font-family: Whitney;
+        font-style: medium;
+        font-weight: 600;
+        src: url(https://discordapp.com/assets/a934ab008c7f6a2274ec441f6be0696a.woff) format("woff"); }
+
+    @font-face {
+        font-family: Whitney;
+        font-style: semibold;
+        font-weight: 650;
+        src: url(/assets/877ef48bf9fcfee590f0ba64de101b59.woff) format("woff"); }
+
+    @font-face {
+        font-family: Whitney;
+        font-style: bold;
+        font-weight: 700;
+        src: url(https://discordapp.com/assets/2e004dd717cdc58b9ccb361d286ebbce.woff) format("woff"); }
+
+    @font-face {
+        font-family: SourceCodePro;
+        font-style: normal;
+        font-weight: 500;
+        src: url(https://discordapp.com/assets/748ac49ebe4bf0ddfe85c005be7c64c4.woff) format("woff"); }
+
+    /** NATIVE
+    ----------------------------- **/
+    body, html {
+        font-family: Whitney, Helvetica Neue, Helvetica, Arial, sans-serif;
+        background: #2C2F33;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center; }
+
+    p {
+        line-height: 27px;
+        text-align: justify; }
+
+    code {
+        font-family: SourceCodePro;
+        background: #2e3136;
+        border: 2px solid #282b30;
+        border-radius: 5px;
+        box-sizing: border-box;
+        padding: 8px;
+        font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; }
+
+    a {
+        text-decoration: none;
+        color: #7289da;
+        transition: all 0.3s cubic-bezier(0.25, 0.25, 0.315, 1.35), top 0.1s linear; }
+
+    a:hover {
+        color: #7890e7; }
+
+    /** HEADER
+    ----------------------------- **/
+    header {
+        height: 500px;
+        width: 100%;
+        background: url("../img/background.png"), #7289DA;
+        display: flex;
+        justify-content: center; }
+    header img {
+        user-drag: none;
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        -ms-user-select: none; }
+
+    /** SECTION
+    ----------------------------- **/
+    section {
+        width: 80%;
+        padding: 1rem 0rem; }
+    section .header {
+        padding: 2rem; }
+    section h1, section h3 {
+        font-weight: bold;
+        color: #FFFFFF;
+        padding: 0;
+        margin: 0; }
+    section h1, section h2 {
+        text-align: center; }
+    section h2 {
+        font-size: 12pt; }
+    section h3 {
+        font-size: 18pt; }
+    section ol li {
+        height: 50px; }
+
+    /** FOOTER
+    ----------------------------- **/
+    footer {
+        background: #23272A;
+        width: 100%;
+        padding: 1rem 0rem;
+        text-align: center; }
+    footer p {
+        text-align: center; }
+
+    /** MOBILE
+    ----------------------------- **/
+    @media screen and (max-width: 700px) {
+        header {
+            padding: 0px;
+            height: auto; }
+        header img {
+            width: 80vw;
+            height: 80vw;
+            max-height: 500px;
+            max-width: 500px; } }
+</style>
+
+<!-- Javascript -->
+<!-- Bottom of the document to increase page loadtimes -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
+<script src="js/app.js"></script>
+
+</html>
