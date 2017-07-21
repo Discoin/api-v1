@@ -53,6 +53,6 @@ server.get('/rates', function respond(req, res, next) {
 	res.sendRaw(info);
 });
 
-server.listen(process.env.PORT || 8080, function() {
+server.listen(process.env.PORT || 66588, function() {
 	console.log(`${server.name} listening at ${server.url}`);
 });
