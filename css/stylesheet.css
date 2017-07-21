@@ -74,7 +74,7 @@ a:hover {
 /** HEADER
 ----------------------------- **/
 header {
-    height: 500px;
+    height: 300px;
     width: 100%;
     background: url("../img/background.png"), #7289DA;
     display: flex;
