@@ -12,6 +12,9 @@ const glimits = JSON.parse(fs.readFileSync("./glimits.json", "utf8"));
 const alltrans = JSON.parse(fs.readFileSync("./transactions.json", "utf8"));
 const clientsecret = "plz";
 
+// Define Pages
+var frontend = fs.readFileSync('index.html');
+
 // Define exchange rate.
 // From: 1 Bot currency = ? Discoin
 // To: 1 Discoin = ? Bot currency
@@ -22,7 +25,9 @@ const transactions = [];
 
 const server = restify.createServer();
 server.get('/', function status(req, res, next) {
-	res.sendRaw('I should be working correctly. If I missed a transaction, please contact my master (austinhuang#1076).\nLearn more at https://github.com/austinhuang0131/discoin.');
+    res.end(frontend);
+    //OLD FRONTEND
+	//res.sendRaw('I should be working correctly. If I missed a transaction, please contact my master (austinhuang#1076).\nLearn more at https://github.com/austinhuang0131/discoin.');
 	next();
 });
 
