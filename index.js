@@ -1,6 +1,13 @@
 // First prototype of Discoin.
 // Perfectly lol
+
+// Requiring vars
+var fs = require('fs');
+
 const restify = require('restify');
+
+// Define Pages
+var frontend = fs.readFileSync('index.html');
 
 // Define exchange rate.
 // From: 1 Bot currency = ? Discoin
@@ -11,7 +18,9 @@ const transactions = [];
 
 const server = restify.createServer();
 server.get('/', function status(req, res, next) {
-    res.sendRaw('I should work correctly. If I missed a transaction, please contact my master (austinhuang#1076).');
+    res.end(frontend);
+    // Old Front
+    //res.sendRaw('I should work correctly. If I missed a transaction, please contact my master (AsaPlaysMC#9167).');
     next();
 });
 
@@ -53,5 +62,5 @@ server.get('/rates', function respond(req, res, next) {
 });
 
 server.listen(process.env.PORT || 8080, function() {
-    console.log(`${server.name} listening at ${server.url}`);
+    console.log(`LIMITCoin listening at ${server.url}`);
 });
