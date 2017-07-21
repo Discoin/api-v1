@@ -6,14 +6,11 @@ const request = require('request');
 const randtoken = require('rand-token');
 const schedule = require('node-schedule');
 var PastebinAPI = require('pastebin-js'),
-    pastebin = new PastebinAPI('plz');
+    pastebin = new PastebinAPI('pls');
 const limits = JSON.parse(fs.readFileSync("./limits.json", "utf8"));
 const glimits = JSON.parse(fs.readFileSync("./glimits.json", "utf8"));
 const alltrans = JSON.parse(fs.readFileSync("./transactions.json", "utf8"));
-const clientsecret = "plz";
-
-// Define Pages
-var frontend = fs.readFileSync('index.html');
+const clientsecret = "pls";
 
 // Define exchange rate.
 // From: 1 Bot currency = ? Discoin
@@ -25,24 +22,21 @@ const transactions = [];
 
 const server = restify.createServer();
 server.get('/', function status(req, res, next) {
-    res.end(frontend);
-    //OLD FRONTEND
-	//res.sendRaw('I should be working correctly. If I missed a transaction, please contact my master (austinhuang#1076).\nLearn more at https://github.com/austinhuang0131/discoin.');
-	next();
+	res.redirect("https://github.com/austinhuang0131/discoin", next);
 });
 
 server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	const from = rates.find(f => {return f.token === req.headers.authorization});
 	if (from === undefined) {
-		res.sendRaw('[ERROR] Unauthorized token!');
-		return;
-	}
-	if (parseInt(req.params.amount) * from.from > from.limit.daily) {
-		res.sendRaw('[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.');
+		res.sendRaw(401, '[ERROR] Unauthorized!');
 		return;
 	}
 	if (isNaN(parseInt(req.params.amount))) {
-		res.sendRaw('[ERROR] "Amount" not a number!');
+		res.sendRaw(400, '[ERROR] "Amount" not a number!');
+		return;
+	}
+	if (parseInt(req.params.amount) * from.from > from.limit.daily) {
+		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.');
 		return;
 	}
 	const rate = rates.find(r => {return r.code === req.params.to});
@@ -55,7 +49,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		limit = {user: req.params.user, usage: parseInt(req.params.amount) * from.from};
 	}
 	else if (limit.usage + parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw('[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.');
+		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.');
 		return;
 	}
 	else {
@@ -68,7 +62,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 			glimit = {code: req.params.to, usage: parseInt(req.params.amount) * from.from};
 		}
 		else if (glimit.usage + parseInt(req.params.amount) * from.from > rate.limit.total) {
-			res.sendRaw('[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
+			res.sendRaw(413, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
 			return;
 		}
 		else {
@@ -80,19 +74,19 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	glimits.push(glimit);
 	fs.writeFile("./limits.json", JSON.stringify(limits), "utf8");
 	fs.writeFile("./glimits.json", JSON.stringify(glimits), "utf8");
-	const amount = parseInt(req.params.amount) * from.from * rate.to;
+	var amount = parseInt(req.params.amount) * from.from * rate.to;
 	var rid = randtoken.generate(20);
 	transactions.push({user: req.params.user, for: req.params.to, amount: amount, id: rid});
 	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: parseInt(req.params.amount) * from.from, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
-	const balance = rate.limit.daily - limit.usage;
-	res.sendRaw("Approved. The user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
+	var balance = rate.limit.daily - limit.usage;
+	res.sendRaw(202, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
 });
 
 server.get('/transaction', function respond(req, res, next) {
 	const bot = rates.find(f => {return f.token === req.headers.authorization});
 	if (bot === undefined) {
-		res.sendRaw('[ERROR] Unauthorized token!');
+		res.sendRaw(401, '[ERROR] Unauthorized!');
 		return;
 	}
 	const mytransactions = transactions.filter(t => {return t.for === bot.code});
@@ -132,21 +126,16 @@ server.get('/record', function status(req, res, next) {
 			else {
 				body = JSON.parse(body);
 				var mytrans = alltrans.filter(ts => {return ts.user === body.id});
-				if (mytrans === []) {
-					res.sendRaw("Hello "+body.username+"#"+body.discriminator+" ("+body.id+"). You have no transaction on file for this calendar month.\nShould you have any questions, don't hesitate to contact Discoin Operation Office at https://discord.gg/t9kUMsv.");
-				}
-				else {
-					var records = "Hello "+body.username+"#"+body.discriminator+" ("+body.id+"). Here's your transaction record for this calendar month.\nShould you have any questions, don't hesitate to contact Discoin Operation Office at https://discord.gg/t9kUMsv.\n\n--- LEGEND ---\n* Request Time: The time your origin bot requests the transfer\n* Reception Time: The time your destination bot (should) receive the transfer. If not received by the time given please contact the Operation Office.\n* From/To: Currecy codes.\n* Amount: In Discoin.\n\n| Receipt ID         || Request Time                          || Reception Time                        || From ||  To  || Amount";
-					mytrans.forEach(mt => {
-						if (mt.totime !== undefined) {
-							records += "\n|"+mt.id+"||"+mt.fromtime+"||"+mt.totime+"|| "+mt.from+"  || "+mt.to+" || "+mt.amount;
-						}
-						else {
-							records += "\n|"+mt.id+"||"+mt.fromtime+"||              UNPROCESSED              || "+mt.from+"  || "+mt.to+" || "+mt.amount;
-						}
-					})
-					res.sendRaw(records);
-				}
+				var records = "Hello "+body.username+"#"+body.discriminator+" ("+body.id+"). Here's your transaction record for this calendar month.\nShould you have any questions, don't hesitate to contact Discoin Operation Office at https://discord.gg/t9kUMsv.\n\n--- LEGEND ---\n* Request Time: The time your origin bot requests the transfer\n* Reception Time: The time your destination bot (should) receive the transfer. If not received by the time given please contact the Operation Office.\n* From/To: Currecy codes.\n* Amount: In Discoin.\n\n| Receipt ID         || Request Time                          || Reception Time                        || From ||  To  || Amount";
+				mytrans.forEach(mt => {
+					if (mt.totime !== undefined) {
+						records += "\n|"+mt.id+"||"+mt.fromtime+"||"+mt.totime+"|| "+mt.from+"  || "+mt.to+" || "+mt.amount;
+					}
+					else {
+						records += "\n|"+mt.id+"||"+mt.fromtime+"||              UNPROCESSED              || "+mt.from+"  || "+mt.to+" || "+mt.amount;
+					}
+				})
+				res.sendRaw(records);
 			}
 		});
 	});
