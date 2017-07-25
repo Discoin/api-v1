@@ -165,7 +165,7 @@ server.get('/verify', function status(req, res, next) {
 		body = JSON.parse(body);
 		request({url: 'https://discordapp.com/api/users/@me', headers: {'Authorization': 'Bearer '+body.access_token}}, function (error, response, body) {
 			if (error || response.statusCode !== 200) {
-				res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+				res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			}
 			else {
 				body = JSON.parse(body);
@@ -181,11 +181,11 @@ server.get('/verify', function status(req, res, next) {
 				var uid = body.id;
 				request("https://raw.githubusercontent.com/wesbos/burner-email-providers/master/emails.txt", function (error, response, body) {
 					if (error || response.statusCode !== 200) {
-						res.sendRaw("[ERROR] Cannot connect to GitHub! Check http://status.github.com.");
+						res.sendRaw(response.statusCode, "[ERROR] Cannot connect to GitHub! Check http://status.github.com.");
 						return;
 					}
 					else if (body.split("\n").indexOf(email.split("@")[1]) > -1) {
-						res.sendRaw("[ERROR] Disposable email address DETECTED!\nYour email domain is "+email.split("@")[1]+" which is in our Blacklist.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
+						res.sendRaw(403, "[ERROR] Disposable email address DETECTED!\nYour email domain is "+email.split("@")[1]+" which is in our Blacklist.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
 						users.blacklist.push(uid);
 						fs.writeFile("./users.json", JSON.stringify(users), "utf8");
 					}
