@@ -33,7 +33,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		return;
 	}
 	if (!users.verified.includes(req.params.user)) {
-		res.sendRaw(401, '[ERROR] The user is not verified. Every user must go to http://discoin-austinhuang.rhcloud.com/verify and verify themselves first.');
+		res.sendRaw(403, '[ERROR] The user is not verified. Every user must go to http://discoin-austinhuang.rhcloud.com/verify and verify themselves first.');
 		return;
 	}
 	if (isNaN(parseInt(req.params.amount))) {
@@ -42,11 +42,11 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	}
 	const rate = rates.find(r => {return r.code === req.params.to});
 	if (rate === undefined) {
-		res.sendRaw('[ERROR] "To" currency NOT FOUND.');
+		res.sendRaw(400, '[ERROR] "To" currency NOT FOUND.');
 		return;
 	}
 	if (parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.'); // If the amount of this single transaction exceeded the limit, obviously we decline immediately
+		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.'); // If the amount of this single transaction exceeded the limit, obviously we decline immediately
 		return;
 	} // So from here the transaction itself is definitely lower than the limit
 	var limit = limits.find(l => {return l.user === req.params.user;});
@@ -58,7 +58,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		slimit = {usage: parseInt(req.params.amount) * from.from, code: rate.code}; // If the user hasn't made any transaction to this currency today, we need to write one too
 	}
 	else if (slimit.usage + parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
+		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
 		return;
 	}
 	else {
@@ -73,7 +73,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 			glimit = {code: rate.code, usage: parseInt(req.params.amount) * from.from};
 		}
 		else if (glimit.usage + parseInt(req.params.amount) * from.from > rate.limit.total) {
-			res.sendRaw(413, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
+			res.sendRaw(429, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
 			return;
 		}
 		else {
@@ -88,7 +88,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	var amount = parseInt(req.params.amount) * from.from * rate.to;
 	var rid = randtoken.generate(20);
 	transactions.push({user: req.params.user, for: req.params.to, amount: amount, id: rid});
-	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: parseInt(req.params.amount) * from.from, id: rid});
+	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: amount, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
 	var balance = rate.limit.daily - slimit.usage;
 	res.sendRaw(200, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
@@ -126,13 +126,13 @@ server.get('/record', function status(req, res, next) {
 	}
 	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/record&client_secret="+clientsecret, function (error, response, body) {
 		if (error || response.statusCode !== 200) {
-			res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+			res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			return;
 		}
 		body = JSON.parse(body);
 		request({url: 'https://discordapp.com/api/users/@me', headers: {'Authorization': 'Bearer '+body.access_token}}, function (error, response, body) {
 			if (error || response.statusCode !== 200) {
-				res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+				res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			}
 			else {
 				body = JSON.parse(body);
@@ -159,33 +159,33 @@ server.get('/verify', function status(req, res, next) {
 	}
 	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/verify&client_secret="+clientsecret, function (error, response, body) {
 		if (error || response.statusCode !== 200) {
-			res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+			res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			return;
 		}
 		body = JSON.parse(body);
 		request({url: 'https://discordapp.com/api/users/@me', headers: {'Authorization': 'Bearer '+body.access_token}}, function (error, response, body) {
 			if (error || response.statusCode !== 200) {
-				res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+				res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			}
 			else {
 				body = JSON.parse(body);
 				if (users.blacklist.includes(body.id)) {
-					res.sendRaw("[ERROR] You have been blacklisted for using a disposable email address before.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
+					res.sendRaw(403, "[ERROR] You have been blacklisted for using a disposable email address before.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
 					return;
 				}
 				else if (body.email === null) {
-					res.sendRaw("[ERROR] You don't have an email on your Discord account. Please add one onto your account and come back to this page, or you'll not be able to make any Discoin transactions.");
+					res.sendRaw(400, "[ERROR] You don't have an email on your Discord account. Please add one onto your account and come back to this page, or you'll not be able to make any Discoin transactions.");
 					return;
 				}
 				var email = body.email;
 				var uid = body.id;
 				request("https://raw.githubusercontent.com/wesbos/burner-email-providers/master/emails.txt", function (error, response, body) {
 					if (error || response.statusCode !== 200) {
-						res.sendRaw("[ERROR] Cannot connect to GitHub! Check http://status.github.com.");
+						res.sendRaw(response.statusCode, "[ERROR] Cannot connect to GitHub! Check http://status.github.com.");
 						return;
 					}
 					else if (body.split("\n").indexOf(email.split("@")[1]) > -1) {
-						res.sendRaw("[ERROR] Disposable email address DETECTED!\nYour email domain is "+email.split("@")[1]+" which is in our Blacklist.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
+						res.sendRaw(403, "[ERROR] Disposable email address DETECTED!\nYour email domain is "+email.split("@")[1]+" which is in our Blacklist.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
 						users.blacklist.push(uid);
 						fs.writeFile("./users.json", JSON.stringify(users), "utf8");
 					}
