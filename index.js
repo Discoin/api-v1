@@ -33,7 +33,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		return;
 	}
 	if (!users.verified.includes(req.params.user)) {
-		res.sendRaw(401, '[ERROR] The user is not verified. Every user must go to http://discoin-austinhuang.rhcloud.com/verify and verify themselves first.');
+		res.sendRaw(403, '[ERROR] The user is not verified. Every user must go to http://discoin-austinhuang.rhcloud.com/verify and verify themselves first.');
 		return;
 	}
 	if (isNaN(parseInt(req.params.amount))) {
