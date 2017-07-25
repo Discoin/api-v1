@@ -42,7 +42,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	}
 	const rate = rates.find(r => {return r.code === req.params.to});
 	if (rate === undefined) {
-		res.sendRaw('[ERROR] "To" currency NOT FOUND.');
+		res.sendRaw(400, '[ERROR] "To" currency NOT FOUND.');
 		return;
 	}
 	if (parseInt(req.params.amount) * from.from > rate.limit.daily) {
@@ -126,13 +126,13 @@ server.get('/record', function status(req, res, next) {
 	}
 	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/record&client_secret="+clientsecret, function (error, response, body) {
 		if (error || response.statusCode !== 200) {
-			res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+			res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			return;
 		}
 		body = JSON.parse(body);
 		request({url: 'https://discordapp.com/api/users/@me', headers: {'Authorization': 'Bearer '+body.access_token}}, function (error, response, body) {
 			if (error || response.statusCode !== 200) {
-				res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+				res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			}
 			else {
 				body = JSON.parse(body);
@@ -159,7 +159,7 @@ server.get('/verify', function status(req, res, next) {
 	}
 	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/verify&client_secret="+clientsecret, function (error, response, body) {
 		if (error || response.statusCode !== 200) {
-			res.sendRaw("[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
+			res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			return;
 		}
 		body = JSON.parse(body);
@@ -170,11 +170,11 @@ server.get('/verify', function status(req, res, next) {
 			else {
 				body = JSON.parse(body);
 				if (users.blacklist.includes(body.id)) {
-					res.sendRaw("[ERROR] You have been blacklisted for using a disposable email address before.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
+					res.sendRaw(403, "[ERROR] You have been blacklisted for using a disposable email address before.\nShould you have any questions, please contact https://discord.gg/t9kUMsv.");
 					return;
 				}
 				else if (body.email === null) {
-					res.sendRaw("[ERROR] You don't have an email on your Discord account. Please add one onto your account and come back to this page, or you'll not be able to make any Discoin transactions.");
+					res.sendRaw(400, "[ERROR] You don't have an email on your Discord account. Please add one onto your account and come back to this page, or you'll not be able to make any Discoin transactions.");
 					return;
 				}
 				var email = body.email;
