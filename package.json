@@ -10,7 +10,7 @@
     "start": "node index"
   },
   "author": "Austin Huang",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "node-schedule": "^1.2.3",
     "pastebin-js": "^0.4.0",
