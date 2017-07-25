@@ -46,7 +46,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		return;
 	}
 	if (parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.'); // If the amount of this single transaction exceeded the limit, obviously we decline immediately
+		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.'); // If the amount of this single transaction exceeded the limit, obviously we decline immediately
 		return;
 	} // So from here the transaction itself is definitely lower than the limit
 	var limit = limits.find(l => {return l.user === req.params.user;});
@@ -58,7 +58,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		slimit = {usage: parseInt(req.params.amount) * from.from, code: rate.code}; // If the user hasn't made any transaction to this currency today, we need to write one too
 	}
 	else if (slimit.usage + parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(413, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
+		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
 		return;
 	}
 	else {
@@ -73,7 +73,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 			glimit = {code: rate.code, usage: parseInt(req.params.amount) * from.from};
 		}
 		else if (glimit.usage + parseInt(req.params.amount) * from.from > rate.limit.total) {
-			res.sendRaw(413, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
+			res.sendRaw(429, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
 			return;
 		}
 		else {
