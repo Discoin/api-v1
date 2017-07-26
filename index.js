@@ -91,11 +91,11 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	fs.writeFile("./limits.json", JSON.stringify(limits), "utf8");
 	var amount = parseInt(req.params.amount) * from.from * rate.to;
 	var rid = randtoken.generate(20);
-	transactions.push({user: req.params.user, for: req.params.to, amount: amount, id: rid});
 	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: parseInt(req.params.amount) * from.from, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
 	var balance = rate.limit.daily - slimit.usage;
 	res.sendRaw(200, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
+	request.post({url: webhookurl, json: true, body: {content: "```\n["+rid+"] User "+req.params.user+", "+req.params.amount+" "+from.code+" => "+amount+" "+rate.code+"\n```"}});
 });
 
 server.get('/transaction', function respond(req, res, next) {
@@ -104,16 +104,17 @@ server.get('/transaction', function respond(req, res, next) {
 		res.sendRaw(401, '[ERROR] Unauthorized!');
 		return;
 	}
-	const mytransactions = transactions.filter(t => {return t.for === bot.code});
+	const mytransactions = alltrans.filter(t => {return t.to === bot.code}).filter(mt => {return mt.totime === undefined});
 	res.sendRaw(200, JSON.stringify(mytransactions));
-	mytransactions.forEach(m => {
-		var at = alltrans.find(ot => {return ot.id === m.id;});
-		alltrans.splice(transactions.indexOf(at), 1);
-		at.totime = Date();
-		alltrans.push(at);
-		fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
-		transactions.splice(transactions.indexOf(m), 1);
-	});
+	if (mytransactions !== []) {
+		mytransactions.forEach(m => {
+			var at = alltrans.find(ot => {return ot.id === m.id;});
+			alltrans.splice(transactions.indexOf(at), 1);
+			at.totime = Date();
+			alltrans.push(at);
+			fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
+		});
+	}
 });
 
 server.get('/rates', function respond(req, res, next) {
