@@ -40,6 +40,10 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		res.sendRaw(400, '[ERROR] "Amount" not a number!');
 		return;
 	}
+	if (parseInt(req.params.amount) <= 0) {
+		res.sendRaw(400, '[ERROR] "Amount" is negative!');
+		return;
+	}
 	const rate = rates.find(r => {return r.code === req.params.to});
 	if (rate === undefined) {
 		res.sendRaw(400, '[ERROR] "To" currency NOT FOUND.');
