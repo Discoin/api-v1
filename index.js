@@ -67,6 +67,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	}
 	else if (req.params.to === rate.code) {
 		res.sendRaw(400, '[ERROR] Can not convert into same currency!')
+	}
 	else {
 		limits.splice(limits.indexOf(limit), 1); // Remove old limit
 		limit.limits.splice(limits.indexOf(slimit), 1); // Remove old code-specific limit from the limit
