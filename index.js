@@ -62,7 +62,8 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		slimit = {usage: parseInt(req.params.amount) * from.from, code: rate.code}; // If the user hasn't made any transaction to this currency today, we need to write one too
 	}
 	else if (slimit.usage + parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+balance+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
+		var a = slimit.usage + parseInt(req.params.amount) * from.from;
+		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+a+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
 		return;
 	}
 	else {
@@ -94,7 +95,12 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: parseInt(req.params.amount) * from.from, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
 	var balance = rate.limit.daily - slimit.usage;
-	res.sendRaw(200, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
+	if (req.headers.json === "true") {
+		res.sendRaw(200, JSON.stringify({status: "Approved", currency: rate.code, receipt: rid, limitNow: balance}));
+	}
+	else {
+		res.sendRaw(200, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
+	}
 	request.post({url: webhookurl, json: true, body: {content: "```\n["+rid+"] User "+req.params.user+", "+req.params.amount+" "+from.code+" => "+amount+" "+rate.code+"\n```"}});
 });
 
@@ -104,17 +110,20 @@ server.get('/transaction', function respond(req, res, next) {
 		res.sendRaw(401, '[ERROR] Unauthorized!');
 		return;
 	}
-	const mytransactions = alltrans.filter(t => {return t.to === bot.code}).filter(mt => {return mt.totime === undefined});
+	var mytransactions = alltrans.filter(t => {return t.to === bot.code}).filter(mt => {return mt.totime === undefined});
+	mytransactions.forEach(mt => {
+		mytransactions.splice(mytransactions.indexOf(mt));
+		mt.amount *= bot.to;
+		mytransactions.push(mt);
+	});
 	res.sendRaw(200, JSON.stringify(mytransactions));
-	if (mytransactions !== []) {
-		mytransactions.forEach(m => {
-			var at = alltrans.find(ot => {return ot.id === m.id;});
-			alltrans.splice(transactions.indexOf(at), 1);
-			at.totime = Date();
-			alltrans.push(at);
-			fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
-		});
-	}
+	mytransactions.forEach(m => {
+		var at = alltrans.find(ot => {return ot.id === m.id;});
+		alltrans.splice(transactions.indexOf(at), 1);
+		at.totime = Date();
+		alltrans.push(at);
+		fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
+	});
 });
 
 server.get('/rates', function respond(req, res, next) {
