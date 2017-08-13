@@ -11,6 +11,7 @@ var limits = JSON.parse(fs.readFileSync("./limits.json", "utf8"));
 var glimits = JSON.parse(fs.readFileSync("./glimits.json", "utf8"));
 var alltrans = JSON.parse(fs.readFileSync("./transactions.json", "utf8"));
 var users = JSON.parse(fs.readFileSync("./users.json", "utf8"));
+var config = JSON.parse(fs.readFileSync("./config.json","utf8"));
 const clientsecret = "pls";
 
 // Define exchange rate.
@@ -33,7 +34,7 @@ server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
 		return;
 	}
 	if (!users.verified.includes(req.params.user)) {
-		res.sendRaw(403, '[ERROR] The user is not verified. Every user must go to http://discoin-austinhuang.rhcloud.com/verify and verify themselves first.');
+		res.sendRaw(403, '[ERROR] The user is not verified. Every user must go to ' + config.apiUrl + 'verify and verify themselves first.');
 		return;
 	}
 	if (isNaN(parseInt(req.params.amount))) {
@@ -135,7 +136,7 @@ server.get('/rates', function respond(req, res, next) {
 
 server.get('/record', function status(req, res, next) {
 	if (req.getQuery().indexOf("code=") === -1) {
-		res.redirect("https://discordapp.com/oauth2/authorize?client_id=209891886058438656&scope=identify&response_type=code&redirect_uri=http://discoin-austinhuang.rhcloud.com/record", next);
+		res.redirect("https://discordapp.com/oauth2/authorize?client_id=209891886058438656&scope=identify&response_type=code&redirect_uri=" + config.apiUrl + "record", next);
 		return;
 	}
 	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/record&client_secret="+clientsecret, function (error, response, body) {
@@ -171,7 +172,7 @@ server.get('/verify', function status(req, res, next) {
                 res.redirect("https://github.com/austinhuang0131/Discoin/blob/master/before-using.md", next);
 		return;
 	}
-	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=http://discoin-austinhuang.rhcloud.com/verify&client_secret="+clientsecret, function (error, response, body) {
+	request.post("https://discordapp.com/api/oauth2/token?client_id=209891886058438656&grant_type=authorization_code&code="+req.getQuery().replace("code=", "")+"&redirect_uri=" + config.apiUrl + "verify&client_secret="+clientsecret, function (error, response, body) {
 		if (error || response.statusCode !== 200) {
 			res.sendRaw(response.statusCode, "[ERROR] Cannot connect to Discord!\n1. Did you refresh this page? If so, please go back and re-authorize.\n2. Consult http://status.discordapp.com or try again.");
 			return;
@@ -226,6 +227,6 @@ var dailycleanup = schedule.scheduleJob({hour: 0, minute: 0, second: 0}, functio
 	glimits = [];
 });
 
-server.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080, process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1", function() {
+server.listen(process.env.OPENSHIFT_NODEJS_PORT || config.port || 8080, process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1", function() {
 	console.log(`${server.name} listening at ${server.url}`);
 });
