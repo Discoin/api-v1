@@ -20,6 +20,7 @@ const webhookurl = secret.webhook;
 const rates = secret.tokens;
 
 const server = restify.createServer();
+server.use(restify.gzipResponse());
 server.use(restify.bodyParser());
 server.get('/', function status(req, res, next) {
 	res.redirect("https://github.com/Discoin/api", next);

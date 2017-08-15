@@ -4,4 +4,4 @@ Sometimes users find it hard to earn a specific virtual currency on one bot, but
 
 Introducing **Discoin**, a universal currency allowing users to exchange currencies from one bot to another bot.
 
-*Want to learn more? Check out our [wiki](https://github.com/austinhuang0131/discoin/wiki)!*
+*Want to learn more? Check out our [wiki](https://github.com/Discoin/api/wiki)!*
