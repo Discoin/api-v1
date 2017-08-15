@@ -1,5 +1,5 @@
 .DS_Store
-config.json
+secret.json
 
 # Logs
 logs
