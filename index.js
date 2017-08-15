@@ -3,112 +3,102 @@
 const restify = require('restify');
 const fs = require('fs');
 const request = require('request');
-const randtoken = require('rand-token');
-const schedule = require('node-schedule');
-var PastebinAPI = require('pastebin-js'),
-    pastebin = new PastebinAPI('pls');
+const randtoken = require('rand-token'); // Receipt
+const schedule = require('node-schedule'); // Scheduled cleanup of transaction database
 var limits = JSON.parse(fs.readFileSync("./limits.json", "utf8"));
 var glimits = JSON.parse(fs.readFileSync("./glimits.json", "utf8"));
 var alltrans = JSON.parse(fs.readFileSync("./transactions.json", "utf8"));
 var users = JSON.parse(fs.readFileSync("./users.json", "utf8"));
 var config = JSON.parse(fs.readFileSync("./config.json","utf8"));
-const clientsecret = "pls";
+var secret = JSON.parse(fs.readFileSync("./secret.json","utf8"));
+const clientsecret = secret.clientsecret;
+const webhookurl = secret.webhook;
 
 // Define exchange rate.
 // From: 1 Bot currency = ? Discoin
 // To: 1 Discoin = ? Bot currency
-const rates = [
-];
-// Define unprocessed transactions.
-var transactions = [];
+const rates = secret.tokens;
 
 const server = restify.createServer();
+server.use(restify.bodyParser());
 server.get('/', function status(req, res, next) {
-	res.redirect("https://github.com/austinhuang0131/discoin", next);
+	res.redirect("https://github.com/Discoin/api", next);
 });
 
-server.get('/transaction/:user/:amount/:to', function respond(req, res, next) {
+server.post('/transaction', function respond(req, res, next) {
 	const from = rates.find(f => {return f.token === req.headers.authorization});
 	if (from === undefined) {
-		res.sendRaw(401, '[ERROR] Unauthorized!');
+		res.sendRaw(401, '{"status": "error", "reason": "Unauthorized"}');
 		return;
 	}
-	if (!users.verified.includes(req.params.user)) {
-		res.sendRaw(403, '[ERROR] The user is not verified. Every user must go to ' + config.apiUrl + 'verify and verify themselves first.');
+	var transaction === req.body;
+	if (!users.verified.includes(transaction.user_id)) {
+		res.sendRaw(403, '{"status": "declined", "reason": "User is not verified. Go to '+config.apiUrl+'verify"}');
 		return;
 	}
-	if (isNaN(parseInt(req.params.amount))) {
-		res.sendRaw(400, '[ERROR] "Amount" not a number!');
+	if (isNaN(parseInt(transaction.amount))) {
+		res.sendRaw(400, '{"status": "error", "reason": "Invalid amount"}');
 		return;
 	}
-	if (parseInt(req.params.amount) <= 0) {
-		res.sendRaw(400, '[ERROR] "Amount" is negative!');
+	if (parseInt(transaction.amount) <= 0) {
+		res.sendRaw(400, '{"status": "error", "reason": "Invalid amount"}');
 		return;
 	}
-	const rate = rates.find(r => {return r.code === req.params.to.toUpperCase()});
+	const rate = rates.find(r => {return r.code === transaction.exchangeTo.toUpperCase()});
 	if (rate === undefined) {
-		res.sendRaw(400, '[ERROR] "To" currency NOT FOUND.');
+		res.sendRaw(400, '{"status": "error", "reason": "Invalid destination currency"}');
 		return;
 	}
-	if (parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+from.code+' has a daily transaction limit of '+from.limit.daily+' Discoins per user.'); // If the amount of this single transaction exceeded the limit, obviously we decline immediately
-		return;
-	} // So from here the transaction itself is definitely lower than the limit
-	var limit = limits.find(l => {return l.user === req.params.user;});
+	var limit = limits.find(l => {return l.user === transaction.user_id;});
 	if (limit === undefined) {
-		limit = {user: req.params.user, limits: [{usage: 0, code: rate.code}]}; // If the user hasn't made any transaction today, we need to write limit
+		limit = {user: transaction.user_id, limits: [{usage: 0, code: rate.code}]}; // If the user hasn't made any transaction today, we need to write limit
 	}
 	var slimit = limit.limits.find(sl => {return sl.code === rate.code;});
 	if (slimit === undefined) {
-		slimit = {usage: parseInt(req.params.amount) * from.from, code: rate.code}; // If the user hasn't made any transaction to this currency today, we need to write one too
+		slimit = {usage: parseInt(transaction.amount) * from.from, code: rate.code}; // If the user hasn't made any transaction to this currency today, we need to write one too
 	}
-	else if (slimit.usage + parseInt(req.params.amount) * from.from > rate.limit.daily) {
-		var a = slimit.usage + parseInt(req.params.amount) * from.from;
-		res.sendRaw(429, '[Declined] Daily per user limit exceeded. The currency '+rate.code+' has a daily transaction limit of '+rate.limit.daily+' Discoins per user. The user can still exchange a total of '+a+' Discoins into the currency '+rate.code+' for today.'); // If they exceeded, decline
+	else if (slimit.usage + parseInt(transaction.amount) * from.from > rate.limit.daily) {
+		var a = slimit.usage + parseInt(transaction.amount) * from.from;
+		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Per-User Limit exceeded.", "currency": "'+rate.code+'", "limit": "'+rate.limit.daily+'", "limitNow": "'+a+'"}'); // If they exceeded, decline
 		return;
 	}
 	else {
 		limits.splice(limits.indexOf(limit), 1); // Remove old limit
 		limit.limits.splice(limits.indexOf(slimit), 1); // Remove old code-specific limit from the limit
-		slimit.usage += parseInt(req.params.amount) * from.from; // Input new code-specific limit
+		slimit.usage += parseInt(transaction.amount) * from.from; // Input new code-specific limit
 	}
 	limit.limits.push(slimit); // Add it
 	if (rate.limit.total !== undefined) {
 		var glimit = glimits.find(gl => {return gl.code === rate.code});
 		if (glimit === undefined) {
-			glimit = {code: rate.code, usage: parseInt(req.params.amount) * from.from};
+			glimit = {code: rate.code, usage: parseInt(transaction.amount) * from.from};
 		}
-		else if (glimit.usage + parseInt(req.params.amount) * from.from > rate.limit.total) {
-			res.sendRaw(429, '[Declined] Daily total limit exceeded. The currency '+rate.code+' has a daily total transaction limit of '+rate.limit.total+' Discoins.');
+		else if (glimit.usage + parseInt(transaction.amount) * from.from > rate.limit.total) {
+		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Total Limit exceeded.","currency": "'+rate.code+'", "limit": "'+rate.limit.total+'"}'); // If they exceeded, decline
 			return;
 		}
 		else {
 			glimits.splice(glimits.indexOf(glimit), 1);
-			glimit.usage += parseInt(req.params.amount) * from.from;
+			glimit.usage += parseInt(transaction.amount) * from.from;
 		}
 		glimits.push(glimit);
 		fs.writeFile("./glimits.json", JSON.stringify(glimits), "utf8");
 	}
 	limits.push(limit);
 	fs.writeFile("./limits.json", JSON.stringify(limits), "utf8");
-	var amount = parseInt(req.params.amount) * from.from * rate.to;
+	var amount = parseInt(transaction.amount) * from.from * rate.to;
 	var rid = randtoken.generate(20);
-	alltrans.push({user: req.params.user, fromtime: Date(), from: from.code, to: req.params.to, amount: parseInt(req.params.amount) * from.from, id: rid});
+	alltrans.push({user: transaction.user_id, fromtime: Date(), from: from.code, to: transaction.exchangeTo, amount: parseInt(transaction.amount) * from.from, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
 	var balance = rate.limit.daily - slimit.usage;
-	if (req.headers.json === "true") {
-		res.sendRaw(200, JSON.stringify({status: "Approved", currency: rate.code, receipt: rid, limitNow: balance}));
-	}
-	else {
-		res.sendRaw(200, "Approved.\nThe receipt ID is "+rid+".\nThe user can still exchange a total of "+balance+" Discoins into the currency "+rate.code+" for today.");
-	}
-	request.post({url: webhookurl, json: true, body: {content: "```\n["+rid+"] User "+req.params.user+", "+req.params.amount+" "+from.code+" => "+amount+" "+rate.code+"\n```"}});
+	res.sendRaw(200, JSON.stringify({status: "Approved", currency: rate.code, receipt: rid, limitNow: balance}));
+	request.post({url: webhookurl, json: true, body: {content: "```\n["+rid+"] User "+transaction.user_id+", "+transaction.amount+" "+from.code+" => "+amount+" "+rate.code+"\n```"}});
 });
 
 server.get('/transaction', function respond(req, res, next) {
 	const bot = rates.find(f => {return f.token === req.headers.authorization});
 	if (bot === undefined) {
-		res.sendRaw(401, '[ERROR] Unauthorized!');
+		res.sendRaw(401, '{"status": "error", "reason": "Unauthorized"}');
 		return;
 	}
 	var mytransactions = alltrans.filter(t => {return t.to === bot.code}).filter(mt => {return mt.totime === undefined});
@@ -227,6 +217,6 @@ var dailycleanup = schedule.scheduleJob({hour: 0, minute: 0, second: 0}, functio
 	glimits = [];
 });
 
-server.listen(process.env.OPENSHIFT_NODEJS_PORT || config.port || 8080, process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1", function() {
+server.listen(config.port || 8080, process.ENV.port || "127.0.0.1", function() {
 	console.log(`${server.name} listening at ${server.url}`);
 });
