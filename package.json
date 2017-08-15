@@ -2,6 +2,8 @@
   "name": "discoin",
   "version": "0.0.1",
   "description": "Central API for Discord currency exchange",
+  "homepage":"https://discoin.disnodeteam.com/",
+  "bugs":"https://github.com/Discoin/api/issues",
   "engines": {
     "node": "6.11.1"
   },
