@@ -59,7 +59,7 @@ server.post('/transaction', function respond(req, res, next) {
 	}
 	else if (slimit.usage + parseInt(transaction.amount) * from.from > rate.limit.daily) {
 		var a = slimit.usage + parseInt(transaction.amount) * from.from;
-		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Per-User Limit exceeded.", "currency": "'+rate.code+'", "limit": "'+rate.limit.daily+'", "limitNow": "'+a+'"}'); // If they exceeded, decline
+		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Per-User Limit exceeded.", "currency": "'+rate.code+'", "limit": '+rate.limit.daily+', "limitNow": '+a+'}'); // If they exceeded, decline
 		return;
 	}
 	else {
@@ -74,7 +74,7 @@ server.post('/transaction', function respond(req, res, next) {
 			glimit = {code: rate.code, usage: parseInt(transaction.amount) * from.from};
 		}
 		else if (glimit.usage + parseInt(transaction.amount) * from.from > rate.limit.total) {
-		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Total Limit exceeded.","currency": "'+rate.code+'", "limit": "'+rate.limit.total+'"}'); // If they exceeded, decline
+		res.sendRaw(403, '{"status": "declined", "reason" : "Daily Total Limit exceeded.","currency": "'+rate.code+'", "limit": '+rate.limit.total+'}'); // If they exceeded, decline
 			return;
 		}
 		else {
