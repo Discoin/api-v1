@@ -91,7 +91,7 @@ server.post('/transaction', function respond(req, res, next) {
 	alltrans.push({user: transaction.user_id, fromtime: Date(), from: from.code, to: transaction.exchangeTo, amount: parseInt(transaction.amount) * from.from, id: rid});
 	fs.writeFileSync("./transactions.json", JSON.stringify(alltrans), "utf8");
 	var balance = rate.limit.daily - slimit.usage;
-	res.sendRaw(200, JSON.stringify({status: "Approved", currency: rate.code, receipt: rid, limitNow: balance}));
+	res.sendRaw(200, JSON.stringify({status: "Approved", receipt: rid, limitNow: balance, resultAmount: amount}));
 	request.post({url: webhookurl, json: true, body: {content: "```\n["+rid+"] User "+transaction.user_id+", "+transaction.amount+" "+from.code+" => "+amount+" "+rate.code+"\n```"}});
 });
 
